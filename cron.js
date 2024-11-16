@@ -4,7 +4,9 @@ import { sendEmailWithAttachment } from './mailer.js'; // Mail gönderme kodu bu
 import dotenv from 'dotenv';
 dotenv.config();
 
-cron.schedule('* * * * *', async () => {
+const cronExpression = process.env.CRON_EXPRESSION || '0 */12 * * *';
+
+cron.schedule(cronExpression, async () => {
     console.log("Günlük analiz başlatılıyor...");
 
     try {
