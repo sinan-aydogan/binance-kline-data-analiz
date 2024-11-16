@@ -1,6 +1,8 @@
 import fs from 'fs';
 import puppeteer from 'puppeteer';
 import markdownit from 'markdown-it';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export class MarkdownTableGenerator {
     constructor(data) {
@@ -77,7 +79,7 @@ export class MarkdownTableGenerator {
         return { mainTable, topTable, worstTable };
     }
 
-    async saveToFile(filename) {
+    async saveToFile() {
         const { mainTable, topTable, worstTable } = this.generateTable();
 
         // Markdown içeriğini oluştur
@@ -88,15 +90,17 @@ export class MarkdownTableGenerator {
         '# Düşüşte Olanlar\n' +
         worstTable + '\n';
 
-        filename = (filename || 'rapor') + '-' + new Date().toLocaleString().replace(/:/g, '-');
+        let filename = process.env.REPORT_FILE_NAME || 'rapor';
         let markdownFilePath = filename + '.md';
         let pdfFilePath = filename + '.pdf';
 
         fs.writeFileSync(markdownFilePath, markdownContent, 'utf8');
 
-        await this.generatePdf(markdownContent, pdfFilePath);
+        const file =  await this.generatePdf(markdownContent, pdfFilePath);
 
         console.log(`Rapor ${pdfFilePath} ve ${markdownFilePath} dosyalarına kaydedildi.`);
+
+        return file;
     }
 
     async generatePdf(markdownContent, pdfFilePath) {

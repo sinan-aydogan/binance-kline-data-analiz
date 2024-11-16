@@ -88,17 +88,18 @@ class Main {
 
             const generator = new MarkdownTableGenerator(report);
 
-            generator.saveToFile("rapor");
+            return generator.saveToFile();
         } catch (error) {
             console.error("Error analyzing all symbols:", error.message);
         }
     }
 }
 
-// Kullanım
-(async () => {
+export async function generateAndSaveReport() {
     const api = new BinanceAPI();
     const main = new Main(api);
 
-    await main.analyzeAllSymbols();
-})();
+    await main.analyzeAllSymbols().then(file => {
+        return file;
+    });
+}
