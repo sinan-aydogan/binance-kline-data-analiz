@@ -42,8 +42,8 @@ Bu proje MIT Lisansı ile lisanslanmıştır. Daha fazla bilgi için `LICENSE` d
 
 ## Katkıda Bulunanlar
 
-- [Kullanıcı Adı](https://github.com/kullaniciadi)
+- [Sinan AYDOĞAN](https://github.com/sinan-aydogan)
 
 ## İletişim
 
-Sorularınız veya geri bildirimleriniz için lütfen [email@example.com](mailto:email@example.com) adresinden bizimle iletişime geçin.
+Sorularınız veya geri bildirimleriniz için lütfen [info@tailadmin.dev](mailto:info@tailadmin.dev) adresinden bizimle iletişime geçin.
