@@ -1,6 +1,7 @@
 export class JsonDataAnalyzer {
-    constructor(symbol,data) {
+    constructor(symbol,data,tickerData) {
         this.data = data;
+        this.tickerData = tickerData;
         this.symbol = symbol;
     }
 
@@ -107,16 +108,16 @@ export class JsonDataAnalyzer {
 
     // RSI Yorumlama
     interpretRSI(rsi) {
-        if (rsi < 25) return "RSI düşük, aşırı satılmış. Alım fırsatı olabilir.";
-        if (rsi >= 25 && rsi <= 50) return "RSI nötr. İzlemeye devam edin.";
-        if (rsi > 50 && rsi <= 75) return "RSI yüksek. Mevcut pozisyonu koruyun.";
-        if (rsi > 75) return "RSI aşırı yüksek, aşırı alım. Satış düşünülebilir.";
+        if (rsi < 25) return "Aşırı satılmış, alım fırsatı";
+        if (rsi >= 25 && rsi <= 50) return "Nötr";
+        if (rsi > 50 && rsi <= 75) return "Mevcut pozisyonu koru";
+        if (rsi > 75) return "Aşırı alım, satış düşünülebilir.";
     }
 
     // MACD Yorumlama
     interpretMACD(macd) {
-        if (macd > 0) return "MACD pozitif, yükseliş trendi güçlü. Alım fırsatı olabilir.";
-        if (macd <= 0) return "MACD negatif, düşüş trendi hakim. Satış düşünülebilir.";
+        if (macd > 0) return "Yükseliş trendi, alım fırsatı";
+        if (macd <= 0) return "Düşüş trendi, satış düşünülebilir.";
     }
 
     // Fibonacci Yorumlama
@@ -138,6 +139,39 @@ export class JsonDataAnalyzer {
         return "Fiyat Bollinger ortasında, nötr.";
     }
 
+    // Ek verilerle analiz
+    interpretTickerData() {
+        const priceChangePercent = parseFloat(this.tickerData.priceChangePercent);
+        const volume = parseFloat(this.tickerData.volume);
+        const highPrice = parseFloat(this.tickerData.highPrice);
+        const lowPrice = parseFloat(this.tickerData.lowPrice);
+        const weightedAvgPrice = parseFloat(this.tickerData.weightedAvgPrice);
+        const lastPrice = parseFloat(this.tickerData.lastPrice);
+
+        let priceChangeComment;
+        if (priceChangePercent < -10) {
+            priceChangeComment = "Fiyat düşüş baskısı altında. Yüksek kayıp riski.";
+        } else if (priceChangePercent > 10) {
+            priceChangeComment = "Fiyat aşırı artış gösteriyor. Yüksek volatilite.";
+        } else {
+            priceChangeComment = "Fiyat değişimi normal.";
+        }
+
+        let volumeComment = volume > 10000 ? "Yüksek hacim, piyasa güçlü." : "Düşük hacim, likidite düşük.";
+
+        return {
+            priceChangePercent,
+            priceChangeComment,
+            volume,
+            volumeComment,
+            highPrice,
+            lowPrice,
+            weightedAvgPrice,
+            lastPrice,
+            volatility: highPrice - lowPrice
+        };
+    }
+
     // Özetleme Fonksiyonu
     summarize() {
         const averagePrice = this.calculateAveragePrice();
@@ -147,6 +181,7 @@ export class JsonDataAnalyzer {
         const bollingerBands = this.calculateBollingerBands();
         const trend = this.analyzeTrend();
         const forecasts = this.calculateForecasts();
+        const tickerAnalysis = this.interpretTickerData();
         const currentPrice = this.data[this.data.length - 1].close;
 
         // Yorumlar
@@ -163,6 +198,7 @@ export class JsonDataAnalyzer {
             macd: { value: macd, comment: macdComment },
             fibonacci: { levels: fibonacci, comment: fibonacciComment },
             bollinger: { comment: bollingerComment },
+            tickerAnalysis,
             forecasts
         };
     }

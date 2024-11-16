@@ -5,6 +5,7 @@ import {MarkdownTableGenerator} from "./markdown.js"
 class BinanceAPI {
     constructor(baseURL = "https://api.binance.com") {
         this.baseURL = baseURL;
+        this.tickerData = [];
     }
 
     async fetchSymbols() {
@@ -19,12 +20,11 @@ class BinanceAPI {
                     !item.symbol.endsWith("UPUSDT"));
 
             const safeCoins = usdtPairs.filter(item => 
-                Math.abs(item.priceChangePercent) <= 15 &&
-                item.volume >= 10000 &&
-                item.quoteVolume >= 1000000 &&
-                (item.askPrice - item.bidPrice) / item.weightedAvgPrice * 100 <= 1 &&
-                (item.highPrice - item.lowPrice) / item.weightedAvgPrice * 100 <= 10
+                item.volume >= 10000000 &&
+                item.quoteVolume >= 10000000
             );
+
+            this.tickerData = safeCoins
 
             return safeCoins.map(pair => pair.symbol);
 
@@ -64,8 +64,9 @@ class Main {
         try {
             console.log(`Fetching data for ${symbol}...`);
             const klines = await this.api.fetchKlines(symbol);
+            const coinTickerData = this.api.tickerData.find(item => item.symbol === symbol);
             
-            const analyzer = new JsonDataAnalyzer(symbol,klines); // JsonDataAnalyzer sınıfına veri gönderiliyor
+            const analyzer = new JsonDataAnalyzer(symbol,klines, coinTickerData); // JsonDataAnalyzer sınıfına veri gönderiliyor
             const analysis = analyzer.summarize();
 
             return analysis;
@@ -80,8 +81,6 @@ class Main {
             let report = [];
             console.log("Fetched symbols:", symbols);
 
-            // Sadece ilk 5 symbol üzerinde çalışalım (örnek için)
-            const targetSymbols = symbols.slice(0, 5);
             for (const symbol of symbols) {
                 let result = await this.analyzeSymbol(symbol);
                 report.push(result);
@@ -90,8 +89,6 @@ class Main {
             const generator = new MarkdownTableGenerator(report);
 
             generator.saveToFile("rapor");
-
-            console.log(generator.generateTable());
         } catch (error) {
             console.error("Error analyzing all symbols:", error.message);
         }
