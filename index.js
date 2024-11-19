@@ -1,6 +1,9 @@
 import axios from "axios"
-import {JsonDataAnalyzer} from "./analiz.js"
+import {JsonDataAnalyzer} from "./analyzer.js"
 import {MarkdownTableGenerator} from "./markdown.js"
+import {sendEmailWithAttachment} from "./mailer.js"
+
+const args = process.argv.slice(2);
 
 class BinanceAPI {
     constructor(baseURL = "https://api.binance.com") {
@@ -102,4 +105,30 @@ export async function generateAndSaveReport() {
     await main.analyzeAllSymbols().then(file => {
         return file;
     });
+}
+
+export async function generateAndSendReport() {
+    try {
+        const subscribers = process.env.SUBSCRIBERS.split(',');
+        const reportFilename = process.env.REPORT_FILE_NAME + '.pdf';
+        
+        await generateAndSaveReport().then(() => {
+            subscribers.forEach(async subscriber => {
+                await sendEmailWithAttachment(
+                    subscriber,
+                    process.env.EMAIL_SUBJECT,
+                    process.env.EMAIL_BODY,
+                    reportFilename
+                );
+            });
+        });
+    } catch (error) {
+        console.error("Günlük analiz sırasında hata oluştu:", error.message);
+    }
+}
+
+if (args.includes('--mail')) {
+    await generateAndSendReport()
+} else {
+    await generateAndSaveReport()
 }
